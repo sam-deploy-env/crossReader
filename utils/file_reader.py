@@ -1,22 +1,22 @@
 import json
 import aiofiles
+import asyncio
 
-from repositories.RunnerRepository import RunnerRepository
-from repositories.SettingRepository import SettingRepository
 from models.Runner import Runner
 
-runner_repository = RunnerRepository()
-setting_repository = SettingRepository()
+async def read_file(runner_repo, filename):
+    runners_in_file = await extract_data(filename)
+    await asyncio.to_thread(process_runners, runner_repo, runners_in_file)
 
-async def read_file(filename):
-    runner_map = runner_repository.get_runner_map()
-    runners_to_insert = []
 
+async def extract_data(filename):
     async with aiofiles.open(filename, "r", encoding="utf-8") as file:
         content = await file.read()
-    data = json.loads(content)
+    return json.loads(content).get("runners", [])
 
-    runners_in_file = data.get("runners", [])
+def process_runners(runner_repo, runners_in_file):
+    runner_map = runner_repo.get_runner_map()
+    runners_to_insert = []
     for runner in runners_in_file:
         runner_to_save = extract_runner(runner)
         name = runner_to_save.last_name + "_" + runner_to_save.first_name
@@ -24,10 +24,10 @@ async def read_file(filename):
             runner_in_db = runner_map[name]
             if runner_to_save.is_different(runner_in_db):
                 runner_to_save.id = runner_in_db.id
-                runner_repository.update(runner_to_save)
+                runner_repo.update(runner_to_save)
         else:
             runners_to_insert.append(runner_to_save)
-    runner_repository.insert_runners(runners_to_insert)
+    runner_repo.insert_runners(runners_to_insert)
 
 def extract_runner(runner):
     last_name = runner.get("lastName")

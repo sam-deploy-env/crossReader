@@ -1,48 +1,51 @@
+from database import SessionLocal
 from repositories.SettingRepository import SettingRepository
 from repositories.RunnerRepository import RunnerRepository
 from repositories.CategoryRepository import CategoryRepository
 from mail_sender import mail_service
 from utils import word_generator
-setting_repository = SettingRepository()
-runner_repository = RunnerRepository()
-category_repository = CategoryRepository()
 
 def update_rewards():
-    rewards = get_rewards_in_db()
-    for reward in rewards:
-        category_repository.update(RewardInBase(reward.category, reward.sex, reward.id))
+    session = SessionLocal()
+    try :
+        category_repo = CategoryRepository(session)
+        runner_repo = RunnerRepository(session)
+        setting_repo = SettingRepository(session)
+        rewards = get_rewards_in_db(category_repo, runner_repo, setting_repo)
+        for reward in rewards:
+            category_repo.update(reward)
+        if None not in [reward.id for reward in rewards] and setting_repo.get_mail_sent() == 0:
+            word_generator.create_word_file(category_repo, runner_repo)
+            mail_service.send_mail()
+            setting_repo.set_mail_sent(1)
+    finally:
+        session.close()
 
-def get_rewards_in_db():
-    number_scratch_m = setting_repository.get_number_scratch_m()
-    number_scratch_f = setting_repository.get_number_scratch_f()
+def get_rewards_in_db(category_repo, runner_repo, setting_repo):
+    number_scratch_m = setting_repo.get_number_scratch_m()
+    number_scratch_f = setting_repo.get_number_scratch_f()
     rewards = []
-    get_rewards_in_scratch(rewards, 'M', number_scratch_m)
-    get_rewards_in_scratch(rewards, 'F', number_scratch_f)
-    for category in category_repository.get_by_sex('F'):
-        get_rewards_in_category(rewards, category.category, 'F', number_scratch_f)
-    for category in category_repository.get_by_sex('M'):
-        get_rewards_in_category(rewards, category.category, 'M', number_scratch_m)
+    get_rewards_in_scratch(rewards, 'M', number_scratch_m, runner_repo)
+    get_rewards_in_scratch(rewards, 'F', number_scratch_f, runner_repo)
+    for category in category_repo.get_by_sex('F'):
+        get_rewards_in_category(rewards, category.category, 'F', number_scratch_f, runner_repo)
+    for category in category_repo.get_by_sex('M'):
+        get_rewards_in_category(rewards, category.category, 'M', number_scratch_m, runner_repo)
     ids_rewarded = [reward.id for reward in rewards if reward.id is not None]
-    oriol_id_f = runner_repository.get_first_oriol(ids_rewarded, 'F')
+    oriol_id_f = runner_repo.get_first_oriol(ids_rewarded, 'F')
     add_runner_in_rewards(rewards, oriol_id_f, "O", 'F')
-    oriol_id_m = runner_repository.get_first_oriol(ids_rewarded, 'M')
+    oriol_id_m = runner_repo.get_first_oriol(ids_rewarded, 'M')
     add_runner_in_rewards(rewards, oriol_id_m, "O", 'M')
-    if None not in [reward.id for reward in rewards] and \
-        oriol_id_f is not None and oriol_id_m is not None \
-            and setting_repository.get_mail_sent() == 0:
-        word_generator.create_word_file()
-        mail_service.send_mail()
-        setting_repository.set_mail_sent(1)
     return rewards
 
-def get_rewards_in_scratch(rewards, sex, number):
+def get_rewards_in_scratch(rewards, sex, number, runner_repo):
     for i in range(1, number+1):
         category = "S" + str(i)
-        runner_id = runner_repository.get_reward_in_scratch(i, sex)
+        runner_id = runner_repo.get_reward_in_scratch(i, sex)
         add_runner_in_rewards(rewards, runner_id, category, sex)
 
-def get_rewards_in_category(rewards, category, sex, skip):
-    runner_id = runner_repository.get_reward_in_category(category, sex, skip)
+def get_rewards_in_category(rewards, category, sex, skip, runner_repo):
+    runner_id = runner_repo.get_reward_in_category(category, sex, skip)
     add_runner_in_rewards(rewards, runner_id, category, sex)
 
 def add_runner_in_rewards(rewards, runner_id, category, sex):
@@ -52,11 +55,11 @@ def add_runner_in_rewards(rewards, runner_id, category, sex):
         reward = RewardInBase(category, sex, None)
     rewards.append(reward)
 
-def get_rewards_to_display():
+def get_rewards_to_display(category_repo, runner_repo):
     rewards = []
-    rewards_in_db = category_repository.get_rewards()
+    rewards_in_db = category_repo.get_rewards()
     ids = [reward.runner for reward in rewards_in_db]
-    runners = runner_repository.get_rewards_map(ids)
+    runners = runner_repo.get_rewards_map(ids)
     for reward in rewards_in_db:
         runner = runners.get(reward.runner)
         if runner:

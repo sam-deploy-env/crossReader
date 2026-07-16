@@ -3,18 +3,13 @@ import zipfile
 import shutil
 import os
 
-from repositories.CategoryRepository import CategoryRepository
-from repositories.RunnerRepository import RunnerRepository
 from utils import rewards
 from constants import file_data
 
-runner_repository = RunnerRepository()
-category_repository = CategoryRepository()
-
-def create_word_file():
+def create_word_file(category_repo, runner_repo):
     old_text_list = []
     new_text_list = []
-    rewards_to_display = rewards.get_rewards_to_display()
+    rewards_to_display = rewards.get_rewards_to_display(category_repo, runner_repo)
     for reward in rewards_to_display:
         if reward.ranking is None:
             continue

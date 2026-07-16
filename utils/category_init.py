@@ -1,16 +1,11 @@
-from repositories.CategoryRepository import CategoryRepository
-from repositories.SettingRepository import SettingRepository
 from models.Category import Category
 
-category_repository = CategoryRepository()
-setting_repository = SettingRepository()
-
-def init_categories():
-    category_repository.delete_all()
+def init_categories(category_repo, setting_repo):
+    category_repo.delete_all()
     categories = []
     # Scratch
-    number_scratch_m = setting_repository.get_number_scratch_m()
-    number_scratch_f = setting_repository.get_number_scratch_f()
+    number_scratch_m = setting_repo.get_number_scratch_m()
+    number_scratch_f = setting_repo.get_number_scratch_f()
     order = 1
     for i in range(1, number_scratch_m+1):
         categories.append(Category("Scratch M", True, "S" + str(i), "M", order))
@@ -49,4 +44,4 @@ def init_categories():
     categories.append(Category("Oriol F", False, "O", "F", order))
     order += 1
 
-    category_repository.insert_categories(categories)
+    category_repo.insert_categories(categories)
