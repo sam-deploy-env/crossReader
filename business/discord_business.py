@@ -1,23 +1,24 @@
 import asyncio
+import discord
 import time
 
 from repositories.SettingRepository import SettingRepository
-from utils import word_generator, file_reader, category_init, rewards
+from utils import word_generator, file_reader, category_init, rewards as r
 from repositories.CategoryRepository import CategoryRepository
 from repositories.RunnerRepository import RunnerRepository
 from constants import messages, file_data
-from mail_sender import mail_service
 from database import SessionLocal
+from config import config
 
+REWARDS_CHANNEL_ID = int(config.REWARDS_CHANNEL_ID)
 
-async def mail(ctx):
+async def rewards(ctx):
     session = SessionLocal()
     try:
         category_repo = CategoryRepository(session)
         runner_repo = RunnerRepository(session)
         word_generator.create_word_file(category_repo, runner_repo)
-        mail_service.send_mail()
-        await ctx.send(messages.MAIL_SEND)
+        await ctx.send(file=discord.File(file_data.FINAL_WORD_FILENAME))
     finally:
         session.close()
 
@@ -39,25 +40,25 @@ async def init(ctx):
         runner_repo.delete_all()
         setting_repo.set_number_scratch_m(3)
         setting_repo.set_number_scratch_f(3)
-        setting_repo.set_mail_sent(0)
+        setting_repo.set_file_sent(0)
         setting_repo.set_started(0)
         category_init.init_categories(category_repo, setting_repo)
         await ctx.send(messages.DB_INIT)
     finally:
         session.close()
 
-async def setmail(ctx, arg):
+async def setfile(ctx, arg):
     session = SessionLocal()
     try:
         setting_repo = SettingRepository(session)
         if arg.lower() in ["on", "1"]:
-            setting_repo.set_mail_sent(1)
-            await ctx.send(messages.MAIL_ON)
+            setting_repo.set_file_sent(1)
+            await ctx.send(messages.FILE_ON)
         elif arg.lower() in ["off", "0"]:
-            setting_repo.set_mail_sent(0)
-            await ctx.send(messages.MAIL_OFF)
+            setting_repo.set_file_sent(0)
+            await ctx.send(messages.FILE_OFF)
         else:
-            await ctx.send(messages.MAIL_KO)
+            await ctx.send(messages.FILE_KO)
     finally:
         session.close()
 
@@ -85,11 +86,15 @@ async def clear(ctx, nombre):
 async def cmd(ctx):
     await ctx.send(messages.CMD)
 
-async def import_file(message):
+async def import_file(bot, message):
     session = SessionLocal()
     try:
+        category_repo = CategoryRepository(session)
         runner_repo = RunnerRepository(session)
+        setting_repo = SettingRepository(session)
         file = await message.attachments[0].to_file()
+        if file.filename.endswith(".docx"):
+            return
         if not file.filename.endswith(".sbcap"):
             await message.channel.send(messages.UNKNOWN_EXTENSION)
             return
@@ -99,7 +104,10 @@ async def import_file(message):
         end = time.time()
         duration = round(end - start, 2)
         await message.channel.send(messages.FILE_TREATED + " en " + str(duration) + " secondes")
-        await asyncio.to_thread(rewards.update_rewards)
+        to_send = await asyncio.to_thread(r.update_rewards, category_repo, runner_repo, setting_repo)
+        if to_send:
+            await bot.get_channel(REWARDS_CHANNEL_ID).send(file=discord.File(file_data.FINAL_WORD_FILENAME))
+            setting_repo.set_file_sent(1)
     finally:
         session.close()
         

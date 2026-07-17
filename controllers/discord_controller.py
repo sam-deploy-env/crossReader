@@ -10,8 +10,8 @@ intent = Intents(messages=True, members=True, guilds=True, reactions=True, messa
 bot = commands.Bot(command_prefix='$', intents=intent)
 
 @bot.command()
-async def mail(ctx):
-    await discord_business.mail(ctx)
+async def rewards(ctx):
+    await discord_business.rewards(ctx)
 
 @bot.command()
 async def delete(ctx):
@@ -22,8 +22,8 @@ async def init(ctx):
     await discord_business.init(ctx)
 
 @bot.command()
-async def setmail(ctx, arg: str = "on"):
-    await discord_business.setmail(ctx, arg)
+async def setfile(ctx, arg: str = "on"):
+    await discord_business.setfile(ctx, arg)
 
 @bot.command()
 async def started(ctx, arg: str = "on"):
@@ -46,7 +46,7 @@ async def on_message(message):
     if message.guild.id != DISCORD_GUILD_ID:
         return
     if message.attachments:
-        await discord_business.import_file(message)
+        await discord_business.import_file(bot, message)
     if message.author == bot.user:
         return
     await bot.process_commands(message)

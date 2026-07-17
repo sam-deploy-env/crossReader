@@ -22,10 +22,10 @@ class SettingRepository:
         )
         return setting.state if setting else None
 
-    def get_mail_sent(self):
+    def get_file_sent(self):
         setting = (
             self.session.query(Setting)
-            .filter(Setting.data == "mail_sent")
+            .filter(Setting.data == "file_sent")
             .first()
         )
         return setting.state if setting else None
@@ -67,16 +67,16 @@ class SettingRepository:
         self.session.add(setting)
         self.session.commit()
 
-    def set_mail_sent(self, number):
+    def set_file_sent(self, number):
         setting = (
             self.session.query(Setting)
-            .filter(Setting.data == "mail_sent")
+            .filter(Setting.data == "file_sent")
             .first()
         )
         if setting:
             setting.state = number
         else:
-            setting = Setting("mail_sent", number)
+            setting = Setting("file_sent", number)
 
         self.session.add(setting)
         self.session.commit()

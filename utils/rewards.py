@@ -1,25 +1,13 @@
-from database import SessionLocal
-from repositories.SettingRepository import SettingRepository
-from repositories.RunnerRepository import RunnerRepository
-from repositories.CategoryRepository import CategoryRepository
-from mail_sender import mail_service
 from utils import word_generator
 
-def update_rewards():
-    session = SessionLocal()
-    try :
-        category_repo = CategoryRepository(session)
-        runner_repo = RunnerRepository(session)
-        setting_repo = SettingRepository(session)
-        rewards = get_rewards_in_db(category_repo, runner_repo, setting_repo)
-        for reward in rewards:
-            category_repo.update(reward)
-        if None not in [reward.id for reward in rewards] and setting_repo.get_mail_sent() == 0:
-            word_generator.create_word_file(category_repo, runner_repo)
-            mail_service.send_mail()
-            setting_repo.set_mail_sent(1)
-    finally:
-        session.close()
+def update_rewards(category_repo, runner_repo, setting_repo):
+    rewards = get_rewards_in_db(category_repo, runner_repo, setting_repo)
+    for reward in rewards:
+        category_repo.update(reward)
+    if None not in [reward.id for reward in rewards] and setting_repo.get_file_sent() == 0:
+        word_generator.create_word_file(category_repo, runner_repo)
+        return True
+    return False
 
 def get_rewards_in_db(category_repo, runner_repo, setting_repo):
     number_scratch_m = setting_repo.get_number_scratch_m()
