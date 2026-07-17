@@ -27,17 +27,17 @@ class RunnerRepository:
                 .all()
         }
 
-    def get_reward_in_scratch(self, ranking, sex):
-        runner = (
+    def get_all_rewards_in_scratch(self, sex, number):
+        return (
             self.session.query(Runner)
             .filter(
                 Runner.finish == True,
-                Runner.sex_ranking == ranking,
-                Runner.sex == sex
+                Runner.sex == sex,
+                Runner.sex_ranking <= number
             )
-            .first()
+            .order_by(Runner.sex_ranking)
+            .all()
         )
-        return runner.id if runner else None
 
     def get_reward_in_category(self, category, sex, skip):
         runner = (

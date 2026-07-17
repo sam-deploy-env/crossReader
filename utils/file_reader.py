@@ -4,8 +4,9 @@ import asyncio
 
 from models.Runner import Runner
 
-async def read_file(runner_repo, filename):
+async def read_file(category_repo, runner_repo, filename):
     runners_in_file = await extract_data(filename)
+    await asyncio.to_thread(process_categories, category_repo, runners_in_file)
     await asyncio.to_thread(process_runners, runner_repo, runners_in_file)
 
 
@@ -13,6 +14,20 @@ async def extract_data(filename):
     async with aiofiles.open(filename, "r", encoding="utf-8") as file:
         content = await file.read()
     return json.loads(content).get("runners", [])
+
+def process_categories(category_repo, runners):
+    seen = set()
+    categories = []
+
+    for runner in runners:
+        cat = runner["category"]
+        key = (cat["abbreviation"], cat["sex"])
+        if key not in seen:
+            seen.add(key)
+            categories.append({"category" : cat["abbreviation"], "sex" : cat["sex"]})
+
+    category_repo.bulk_enable(categories)
+
 
 def process_runners(runner_repo, runners_in_file):
     runner_map = runner_repo.get_runner_map()

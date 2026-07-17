@@ -8,10 +8,10 @@ def init_categories(category_repo, setting_repo):
     number_scratch_f = setting_repo.get_number_scratch_f()
     order = 1
     for i in range(1, number_scratch_m+1):
-        categories.append(Category("Scratch M", True, "S" + str(i), "M", order))
+        categories.append(Category("Scratch M", True, "S" + str(i), "M", order, True))
         order += 1
     for i in range(1, number_scratch_f+1):
-        categories.append(Category("Scratch F", True, "S" + str(i), "F", order))
+        categories.append(Category("Scratch F", True, "S" + str(i), "F", order, True))
         order += 1
 
     # Categories
@@ -27,6 +27,8 @@ def init_categories(category_repo, setting_repo):
     order += 1
     categories.append(Category("65+ M", False, "65+", "M", order))
     order += 1
+    categories.append(Category("75+ M", False, "75+", "M", order))
+    order += 1
     categories.append(Category("Jeune F", False, "J", "F", order))
     order += 1
     categories.append(Category("Senior F", False, "S", "F", order))
@@ -37,11 +39,15 @@ def init_categories(category_repo, setting_repo):
     order += 1
     categories.append(Category("55+ F", False, "55+", "F", order))
     order += 1
+    categories.append(Category("65+ F", False, "65+", "F", order))
+    order += 1
+    categories.append(Category("75+ F", False, "75+", "F", order))
+    order += 1
 
     # Oriol
-    categories.append(Category("Oriol M", False, "O", "M", order))
+    categories.append(Category("Oriol M", False, "O", "M", order, True))
     order += 1
-    categories.append(Category("Oriol F", False, "O", "F", order))
+    categories.append(Category("Oriol F", False, "O", "F", order, True))
     order += 1
 
     category_repo.insert_categories(categories)

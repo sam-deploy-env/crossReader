@@ -100,7 +100,7 @@ async def import_file(bot, message):
             return
         await message.attachments[0].save(file_data.SBCAP_FILENAME)
         start = time.time()
-        await file_reader.read_file(runner_repo, file_data.SBCAP_FILENAME)
+        await file_reader.read_file(category_repo, runner_repo, file_data.SBCAP_FILENAME)
         end = time.time()
         duration = round(end - start, 2)
         await message.channel.send(messages.FILE_TREATED + " en " + str(duration) + " secondes")

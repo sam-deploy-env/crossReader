@@ -9,15 +9,17 @@ class Category(db.Model):
     category = db.Column(db.String(63), nullable=False)
     sex = db.Column(db.String(7), nullable=False)
     order = db.Column(db.Integer)
+    active = db.Column(db.Boolean, nullable=False)
     runner = db.Column(db.Integer)
 
-    def __init__(self, label, scratch, category, sex, order, runner=None):
+    def __init__(self, label, scratch, category, sex, order, active=False, runner=None):
         self.label = label
         self.scratch = scratch
         self.category = category
         self.sex = sex
         self.order = order
         self.runner = runner
+        self.active = active
 
     def to_json(self):
         return {

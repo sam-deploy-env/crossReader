@@ -1,3 +1,5 @@
+from sqlalchemy import tuple_
+
 from models.Category import Category
 
 class CategoryRepository:
@@ -9,17 +11,8 @@ class CategoryRepository:
     def get_rewards(self):
         return (
             self.session.query(Category)
-            .order_by(Category.order)
-            .all()
-        )
-
-    def get_by_sex(self, sex):
-        return (
-            self.session.query(Category)
             .filter(
-                Category.sex == sex,
-                Category.scratch == False,
-                Category.category != "O"
+                Category.active == True
             )
             .order_by(Category.order)
             .all()
@@ -30,7 +23,8 @@ class CategoryRepository:
             self.session.query(Category)
             .filter(
                 Category.scratch == False,
-                Category.category != "O"
+                Category.category != "O",
+                Category.active == True
             )
             .order_by(Category.order)
             .all()
@@ -42,12 +36,20 @@ class CategoryRepository:
         self.session.commit()
 
     # UPDATE
-    def update(self, reward):
-        (
-            self.session.query(Category)
-            .filter_by(category=reward.category, sex=reward.sex)
-            .update({"runner": reward.id})
-        )
+    def bulk_update(self, rewards):
+        mapping = {(r.category, r.sex): r.runner_id for r in rewards}
+
+        for (category, sex), runner_id in mapping.items():
+            self.session.query(Category) \
+            .filter_by(category=category, sex=sex) \
+            .update({"runner": runner_id}, synchronize_session=False)
+        self.session.commit()
+
+    def bulk_enable(self, filters):
+        pairs = [(f["category"], f["sex"]) for f in filters]
+        self.session.query(Category) \
+            .filter(tuple_(Category.category, Category.sex).in_(pairs)) \
+            .update({"active": True}, synchronize_session=False)
         self.session.commit()
 
     # DELETE
