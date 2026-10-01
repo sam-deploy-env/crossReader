@@ -37,18 +37,18 @@ class CategoryRepository:
 
     # UPDATE
     def bulk_update(self, rewards):
-        mapping = {(r.category, r.sex): r.runner_id for r in rewards}
+        mapping = {(r.race_label, r.category, r.sex): r.runner_id for r in rewards}
 
-        for (category, sex), runner_id in mapping.items():
+        for (race_label, category, sex), runner_id in mapping.items():
             self.session.query(Category) \
-            .filter_by(category=category, sex=sex) \
+            .filter_by(race_label=race_label, category=category, sex=sex) \
             .update({"runner": runner_id}, synchronize_session=False)
         self.session.commit()
 
     def bulk_enable(self, filters):
-        pairs = [(f["category"], f["sex"]) for f in filters]
+        tuples = [(f["race_label"], f["category"], f["sex"]) for f in filters]
         self.session.query(Category) \
-            .filter(tuple_(Category.category, Category.sex).in_(pairs)) \
+            .filter(tuple_(Category.race_label, Category.category, Category.sex).in_(tuples)) \
             .update({"active": True}, synchronize_session=False)
         self.session.commit()
 

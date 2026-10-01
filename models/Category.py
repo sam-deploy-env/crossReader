@@ -4,6 +4,7 @@ class Category(db.Model):
     __tablename__ = "category"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    race_label = db.Column(db.String(63), nullable=False)
     label = db.Column(db.String(63), nullable=False)
     scratch = db.Column(db.Boolean, nullable=False)
     category = db.Column(db.String(63), nullable=False)
@@ -12,7 +13,8 @@ class Category(db.Model):
     active = db.Column(db.Boolean, nullable=False)
     runner = db.Column(db.Integer)
 
-    def __init__(self, label, scratch, category, sex, order, active=False, runner=None):
+    def __init__(self, race_label, label, scratch, category, sex, order, active=False, runner=None):
+        self.race_label = race_label
         self.label = label
         self.scratch = scratch
         self.category = category
@@ -23,6 +25,7 @@ class Category(db.Model):
 
     def to_json(self):
         return {
+            "race_label": self.race_label,
             "label": self.label,
             "scratch": self.scratch,
             "category": self.category,
