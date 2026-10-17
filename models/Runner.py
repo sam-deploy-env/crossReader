@@ -10,6 +10,7 @@ class Runner(db.Model):
     first_name = db.Column(db.String(63), nullable=False)
     sex = db.Column(db.String(7), nullable=False)
     ranking = db.Column(db.Integer)
+    race_label = db.Column(db.String(63), nullable=False)
     category = db.Column(db.String(63), nullable=False)
     category_ranking = db.Column(db.Integer)
     sex_ranking = db.Column(db.Integer)
@@ -21,11 +22,12 @@ class Runner(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, last_name, first_name, sex, ranking, category, category_ranking, sex_ranking, bib_number, time, oriol, finish, out):
+    def __init__(self, last_name, first_name, sex, ranking, race_label, category, category_ranking, sex_ranking, bib_number, time, oriol, finish, out):
         self.last_name = last_name
         self.first_name = first_name
         self.sex = sex
         self.ranking = ranking
+        self.race_label = race_label
         self.category = category
         self.category_ranking = category_ranking
         self.sex_ranking = sex_ranking
@@ -47,6 +49,7 @@ class Runner(db.Model):
             "name": self.last_name + " " + self.first_name,
             "sex": self.sex,
             "ranking": self.ranking,
+            "race_label" : self.race_label,
             "category": self.category,
             "category_ranking": self.category_ranking,
             "sex_ranking": self.sex_ranking,
@@ -62,6 +65,7 @@ class Runner(db.Model):
             or self.first_name != runner.first_name \
             or self.sex != runner.sex \
             or self.ranking != runner.ranking \
+            or self.race_label != runner.race_label \
             or self.category != runner.category \
             or self.category_ranking != runner.category_ranking\
             or self.sex_ranking != runner.sex_ranking \

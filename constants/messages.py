@@ -1,7 +1,7 @@
 from config import config
 
 # DISCORD
-FILE_KO = "La commande setfile doit être suivie de 0 (non envoyé) ou 1 (déjà envoyé)"
+FILE_KO = "La commande $setfile doit être suivie de 0 (non envoyé) ou 1 (déjà envoyé)"
 FILE_OFF = "Le fichier est considéré comme non envoyé, l'envoie automatique est activé"
 UNKNOWN_EXTENSION = "Extension du fichier non reconnue. Fichier non pris en compte"
 STARTED_KO = "La commande $started doit être suivie de \"on\", \"off\", 0 ou 1"
@@ -16,7 +16,7 @@ OK = "Ok " + config.PC_NAME
 
 # CMD
 CMD = "Commandes disponibles :\n\n\
-    rewards : Envoie sur discord le fichier word des récompenses.\n\
+    $rewards : Envoie sur discord le fichier word des récompenses.\n\
     $delete : Supprime les coureurs de la base de données.\n\
     $init : Initialise la base de données.\n\
     $setfile [0/1] : Enregistre le fichier des recompenses comme déjà envoyé ou non\n\

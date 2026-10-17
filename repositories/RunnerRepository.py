@@ -27,11 +27,12 @@ class RunnerRepository:
                 .all()
         }
 
-    def get_all_rewards_in_scratch(self, sex, number):
+    def get_all_rewards_in_scratch(self, race_label, sex, number):
         return (
             self.session.query(Runner)
             .filter(
                 Runner.finish == True,
+                Runner.race_label == race_label,
                 Runner.sex == sex,
                 Runner.sex_ranking <= number
             )
@@ -39,11 +40,12 @@ class RunnerRepository:
             .all()
         )
 
-    def get_reward_in_category(self, category, sex, skip):
+    def get_reward_in_category(self, race_label, category, sex, skip):
         runner = (
             self.session.query(Runner)
             .filter(
                 Runner.finish == True,
+                Runner.race_label == race_label,
                 Runner.sex == sex,
                 Runner.category == category,
                 Runner.sex_ranking > skip
@@ -53,11 +55,12 @@ class RunnerRepository:
         )
         return runner.id if runner else None
 
-    def get_first_oriol(self, ids, sex):
+    def get_first_oriol(self, race_label, ids, sex):
         runner = (
             self.session.query(Runner)
             .filter(
                 Runner.finish == True,
+                Runner.race_label == race_label,
                 Runner.sex == sex,
                 Runner.oriol == True,
                 ~Runner.id.in_(ids)
